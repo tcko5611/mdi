@@ -1,5 +1,8 @@
 #include <QFileInfo>
 #include <QDockWidget>
+#include <QProcess>
+#include <QDebug>
+#include <QFileSystemWatcher>
 
 #include "MdiMainWindow.h"
 #include "MdiChild.h"
@@ -11,33 +14,37 @@ MdiMainWindow::MdiMainWindow(const QString &weightFileName,
     QMainWindow(parent),
     ui(new Ui::MdiMainWindow)
 {
-
+  setAttribute(Qt::WA_DeleteOnClose);
   ui->setupUi(this);
-  QFileInfo weightFileInfo(weightFileName);
   QFileInfo templateFileInfo(templateFileName);
+  weightChild = new MdiChild(weightFileName);
+  setCentralWidget(weightChild);
+
   if (templateFileInfo.exists()) {
     ui->actionShowTemplateFile->setEnabled(true);
     templateDock = new QDockWidget(tr("Template"), this);
     templateDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     templateChild = new MdiChild(templateFileName, templateDock);
+    templateChild->setReadOnly(true);
     templateDock->setWidget(templateChild);
-    if (!weightFileInfo.exists()) {
-      QFile::copy(templateFileName, weightFileName);
-    }
+    addDockWidget(Qt::RightDockWidgetArea, templateDock);
+    ui->actionShowTemplateFile->setChecked(true);
+    connect(templateDock, SIGNAL(visibilityChanged(bool)),
+	    ui->actionShowTemplateFile, SLOT(setChecked(bool)));
   }
   else {
     ui->actionShowTemplateFile->setEnabled(false);
   }
-  weightChild = new MdiChild(weightFileName);
-  setCentralWidget(weightChild);
-  if (templateDock)
-    addDockWidget(Qt::RightDockWidgetArea, templateDock);
-
-    // weightChild->show();
+  /*
+  fileWatcher = new QFileSystemWatcher(this);
+  connect(fileWatcher, SIGNAL(fileChanged(const QString&)),
+	  weightChild, SLOT(loadFile()));
+  */
 }
 
 MdiMainWindow::~MdiMainWindow()
 {
+  qDebug() << "destructor for MdiMainWindow";
     delete ui;
 }
 
@@ -52,4 +59,44 @@ void MdiMainWindow::on_actionShowTemplateFile_triggered(bool checked)
     templateDock->show();
   else
     templateDock->hide();
+}
+
+void MdiMainWindow::editorStarted()
+{
+  // fileWatcher->addPath(weightChild->currentFile());
+  ui->actionVim->setEnabled(false);
+  ui->actionEmacs->setEnabled(false);
+  
+  weightChild->setReadOnly(true);
+  weightChild->hide();
+}
+
+void  MdiMainWindow::editorFinished()
+{
+  // fileWatcher->removePath(weightChild->currentFile());
+  ui->actionVim->setEnabled(true);
+  ui->actionEmacs->setEnabled(true);
+  weightChild->setReadOnly(false);
+  weightChild->show();
+}
+
+void MdiMainWindow::on_actionVim_triggered()
+{
+  QString command = "xterm -e vim " + weightChild->currentFile();
+  QProcess *p = new QProcess(this);
+  connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), p, SLOT(deleteLater()));
+  connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(editorFinished()));
+  p->start(command);
+  editorStarted();
+}
+
+void MdiMainWindow::on_actionEmacs_triggered()
+{
+  QString command = "emacs --no-splash " + weightChild->currentFile();
+  QProcess *p = new QProcess(this);
+  connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), p, SLOT(deleteLater()));
+  connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(editorFinished()));
+  p->start(command);
+  editorStarted();
+
 }

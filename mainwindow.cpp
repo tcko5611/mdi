@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "mainwindow.h"
 #include "MdiMainWindow.h"
 #include "ui_mainwindow.h"
@@ -11,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+  qDebug() << "destructor MainWindow";
+  delete ui;
 }
 
 void MainWindow::on_actionOpen_triggered()

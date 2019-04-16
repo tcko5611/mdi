@@ -12,26 +12,17 @@ MdiChild::MdiChild(const QString &fileName, QWidget *parent)
   :QTextEdit(parent)
 {
   setAttribute(Qt::WA_DeleteOnClose);
-  loadFile(fileName);
+  setCurrentFile(fileName);
+  loadFile();
 }
 
-bool MdiChild::loadFile(const QString &fileName)
+bool MdiChild::loadFile()
 {
-  QFile file(fileName);
-  QFileInfo fileInfo(file);
-  if (!fileInfo.exists()) {
-    setCurrentFile(fileName);
-    
-    connect(document(), &QTextDocument::contentsChanged,
-	    this, &MdiChild::documentWasModified);
-    
-    return true;
-  }
+  QFile file(curFile);
   if (!file.open(QFile::ReadOnly | QFile::Text)) {
     QMessageBox::warning(this, tr("MDI"),
 			 tr("Cannot read file %1:\n%2.")
-			 .arg(fileName)
-			 .arg(file.errorString()));
+			 .arg(QDir::toNativeSeparators(curFile), file.errorString()));
     return false;
   }
 
@@ -39,11 +30,6 @@ bool MdiChild::loadFile(const QString &fileName)
   QApplication::setOverrideCursor(Qt::WaitCursor);
   setPlainText(in.readAll());
   QApplication::restoreOverrideCursor();
-  
-  setCurrentFile(fileName);
-  
-  connect(document(), &QTextDocument::contentsChanged,
-	  this, &MdiChild::documentWasModified);
   
   return true;
 }
@@ -68,7 +54,7 @@ bool MdiChild::save()
 
 QString MdiChild::userFriendlyCurrentFile()
 {
-  return strippedName(curFile);
+  return QFileInfo(curFile).fileName();
 }
 
 void MdiChild::closeEvent(QCloseEvent *event)
@@ -78,11 +64,6 @@ void MdiChild::closeEvent(QCloseEvent *event)
     } else {
         event->ignore();
     }
-}
-
-void MdiChild::documentWasModified()
-{
-  setWindowModified(document()->isModified());
 }
 
 bool MdiChild::maybeSave()
@@ -115,8 +96,5 @@ void MdiChild::setCurrentFile(const QString &fileName)
   setWindowTitle(userFriendlyCurrentFile() + "[*]");
 }
 
-QString MdiChild::strippedName(const QString &fullFileName)
-{
-  return QFileInfo(fullFileName).fileName();
-}
+
 

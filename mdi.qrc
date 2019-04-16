@@ -6,5 +6,8 @@
         <file>images/open.png</file>
         <file>images/paste.png</file>
         <file>images/save.png</file>
+        <file>images/emacs.png</file>
+        <file>images/vim.png</file>
+        <file>images/compile.png</file>
     </qresource>
 </RCC>

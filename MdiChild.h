@@ -9,21 +9,19 @@ class MdiChild : public QTextEdit
 public:
   MdiChild(const QString& fileName, QWidget *parent = 0);
 
-  bool loadFile(const QString &fileName);
+
   bool save();
   QString userFriendlyCurrentFile();
   QString currentFile() { return curFile; }
-  
+
+public slots:
+  bool loadFile();  
 protected:
   void closeEvent(QCloseEvent *event) override;
 					      
-private slots:
-  void documentWasModified();
-  
 private:
   bool maybeSave();
   void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
   
   QString curFile;
 };

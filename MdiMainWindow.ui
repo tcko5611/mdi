@@ -30,7 +30,15 @@
     <addaction name="actionSave"/>
     <addaction name="actionShowTemplateFile"/>
    </widget>
+   <widget class="QMenu" name="menuEditors">
+    <property name="title">
+     <string>Editors</string>
+    </property>
+    <addaction name="actionVim"/>
+    <addaction name="actionEmacs"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEditors"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -45,6 +53,8 @@
    </attribute>
    <addaction name="actionSave"/>
    <addaction name="actionShowTemplateFile"/>
+   <addaction name="actionVim"/>
+   <addaction name="actionEmacs"/>
   </widget>
   <action name="actionSave">
    <property name="icon">
@@ -68,6 +78,24 @@
    </property>
    <property name="toolTip">
     <string>Show Template File</string>
+   </property>
+  </action>
+  <action name="actionVim">
+   <property name="icon">
+    <iconset resource="mdi.qrc">
+     <normaloff>:/images/vim.png</normaloff>:/images/vim.png</iconset>
+   </property>
+   <property name="text">
+    <string>Vim</string>
+   </property>
+  </action>
+  <action name="actionEmacs">
+   <property name="icon">
+    <iconset resource="mdi.qrc">
+     <normaloff>:/images/emacs.png</normaloff>:/images/emacs.png</iconset>
+   </property>
+   <property name="text">
+    <string>Emacs</string>
    </property>
   </action>
  </widget>
